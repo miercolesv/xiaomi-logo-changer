@@ -19,6 +19,7 @@ Needs Python 3.8+ and Pillow.
 """
 
 import argparse
+import hashlib
 import io
 import os
 import pwd
@@ -31,11 +32,12 @@ import zipfile
 
 try:
     from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps, ImageStat
-except ImportError:
-    sys.exit("Pillow is needed: 'pip install pillow', or 'sudo pacman -S python-pillow' (Arch), "
-             "or 'sudo apt install python3-pil' (Debian, Ubuntu)")
+except ImportError:  # only drawing needs Pillow; "original", "pull" and "restore" don't
+    Image = None
+PILLOW_HINT = ("Pillow is needed: 'pip install pillow', or 'sudo pacman -S python-pillow' (Arch), "
+               "or 'sudo apt install python3-pil' (Debian, Ubuntu)")
 
-VERSION = "1.1"
+VERSION = "1.2"
 REPO = "https://github.com/miercolesv/xiaomi-logo-changer"
 FONT_URL = "https://raw.githubusercontent.com/miercolesv/xiaomi-logo-changer/main/fonts/"
 FONTS = {
@@ -44,7 +46,19 @@ FONTS = {
     "mono": "DejaVuSansMono-Bold.ttf",
 }
 SS = 4  # supersampling for smooth edges
-Image.MAX_IMAGE_PIXELS = 50_000_000
+if Image:
+    Image.MAX_IMAGE_PIXELS = 50_000_000
+
+# Official fastboot ROMs on Xiaomi's servers. logo.img is near the start of
+# the archive, so "original" only downloads a few hundred KiB of it.
+ROMS = {
+    "umi": {
+        "name": "Xiaomi Mi 10 (Global, V14.0.5.0.TJBMIXM)",
+        "url": "https://cdnorg.d.miui.com/V14.0.5.0.TJBMIXM/"
+               "umi_global_images_V14.0.5.0.TJBMIXM_20230517.0000.00_13.0_global_c9af1b1404.tgz",
+        "sha256": "2b567ed9ddd086cc09cf1f78dbcb562e4713df8b41e7939785a54180ad11c3a8",
+    },
+}
 
 
 def die(msg):
@@ -814,6 +828,34 @@ def cmd_pull(opts):
     print(f"Saved {part} to {opts.output}")
 
 
+def logo_from_rom(url):
+    """Stream an official fastboot ROM and stop as soon as images/logo.img is read."""
+    import tarfile
+    import urllib.request
+    with urllib.request.urlopen(url, timeout=60) as r:
+        with tarfile.open(fileobj=r, mode="r|gz") as tf:
+            for m in tf:
+                if m.isfile() and m.name.endswith("/images/logo.img"):
+                    return tf.extractfile(m).read()
+    die("no images/logo.img in that ROM")
+
+
+def cmd_original(opts):
+    if opts.rom:
+        url, want, name = opts.rom, None, "the ROM"
+    else:
+        rom = ROMS[opts.device]
+        url, want, name = rom["url"], rom["sha256"], rom["name"]
+    print(f"Fetching logo.img from {name} on Xiaomi's server...")
+    data = logo_from_rom(url)
+    if want and hashlib.sha256(data).hexdigest() != want:
+        die("the downloaded logo.img is not the expected file; nothing was saved")
+    with open(opts.output, "wb") as f:
+        f.write(data)
+    print(f"Saved {opts.output} ({len(data) // 1024} KiB). To put it back, from fastboot mode:")
+    print(f"    fastboot flash logo {opts.output}")
+
+
 def cmd_designs(opts):
     for name, d in DESIGNS.items():
         print(f"  {name:15} {d.about}")
@@ -861,6 +903,11 @@ def main():
     sp = sub.add_parser("pull", help="copy the logo partition off a rooted Android phone with adb")
     sp.add_argument("-o", "--output", default="logo.img")
     sp.set_defaults(fn=cmd_pull)
+    sp = sub.add_parser("original", help="download the original logo.img from Xiaomi's official ROM")
+    sp.add_argument("--device", choices=list(ROMS), default="umi", help="codename (default: umi, the Mi 10)")
+    sp.add_argument("--rom", help="URL of another official fastboot ROM (.tgz)")
+    sp.add_argument("-o", "--output", default="logo-original.img")
+    sp.set_defaults(fn=cmd_original)
     sp = sub.add_parser("install", help="on the phone under Linux: replace the logo (as root)")
     design_opts(sp)
     sp.set_defaults(fn=cmd_install)
@@ -869,6 +916,8 @@ def main():
     sp.set_defaults(fn=cmd_restore)
 
     opts = p.parse_args()
+    if Image is None and opts.cmd in ("extract", "build", "module", "install"):
+        die(PILLOW_HINT)
     if hasattr(opts, "design"):
         resolve(opts, "linux" if opts.cmd == "install" else "android")
     if getattr(opts, "image", None) and not os.path.exists(opts.image):

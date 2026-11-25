@@ -119,6 +119,21 @@ class LogoChanger(unittest.TestCase):
             self.assertEqual(Image.open(io.BytesIO(out)).convert("RGB").tobytes(), changed.tobytes())
 
 
+class Original(unittest.TestCase):
+    def test_logo_from_a_rom(self):
+        import tarfile
+        tmp = tempfile.mkdtemp()
+        rom = os.path.join(tmp, "rom.tgz")
+        logo = b"LOGO" * 1000
+        with tarfile.open(rom, "w:gz") as tf:
+            for name, data in (("rom/flash_all.sh", b"#!/bin/sh\n"), ("rom/images/logo.img", logo),
+                               ("rom/images/super.img", b"x" * 5000)):
+                info = tarfile.TarInfo(name)
+                info.size = len(data)
+                tf.addfile(info, io.BytesIO(data))
+        self.assertEqual(lc.logo_from_rom("file://" + rom), logo)
+
+
 @unittest.skipUnless(shutil.which("sh") and shutil.which("dd") and shutil.which("od"), "needs a POSIX shell")
 class Module(unittest.TestCase):
     def test_install_and_uninstall(self):

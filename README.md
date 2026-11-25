@@ -38,6 +38,10 @@ curl -sL https://raw.githubusercontent.com/miercolesv/xiaomi-logo-changer/main/l
 
 `restore` instead of `install` brings the original back.
 
+To undo a fastboot install, the [Undo guide](https://miercolesv.github.io/xiaomi-logo-changer/undo/)
+gets Xiaomi's original `logo.img` from the official ROM with one command
+(a 2 MB download, not the whole ROM).
+
 ## Other Xiaomi phones
 
 Use the `logo.img` from your phone's official fastboot ROM:

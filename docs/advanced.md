@@ -24,7 +24,9 @@ pip install pillow
 Always start from the phone's **original** logo image, either:
 
 - `images/logo.img` from the official fastboot ROM for your phone and system
-  version, or
+  version. You don't need the whole ROM: `python3 logo_changer.py original
+  --rom <link to the .tgz>` downloads only the start of it, where `logo.img`
+  is. Or
 - a copy of the partition from a rooted phone, with USB debugging on:
 
   ```sh
@@ -90,6 +92,7 @@ smaller copy of it.
 | `build logo.img -o new.img` | Write a new logo image, to flash with fastboot |
 | `module logo.img -o logo.zip` | Make a Magisk / KernelSU module |
 | `pull -o logo.img` | Copy the logo partition off a rooted Android phone (adb) |
+| `original` | Download Xiaomi's original Mi 10 `logo.img` from the official ROM (only the first few hundred KB of it). `--rom URL` does the same for another phone's official fastboot ROM |
 | `install` | On a phone running Linux: replace the screens (as root) |
 | `restore` | On a phone running Linux: put the original back (as root) |
 
