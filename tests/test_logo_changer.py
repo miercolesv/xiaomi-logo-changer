@@ -19,7 +19,7 @@ import synthetic  # noqa: E402
 
 
 def opts(**kw):
-    a = argparse.Namespace(design=lc.DEFAULT_DESIGN, image=None, text=None, footer="Linux",
+    a = argparse.Namespace(design=lc.DEFAULT_DESIGN, image=None, text=None, footer=None, os=None,
                            redraw_padlock=False, keep_fastboot=False, keep_error=False,
                            logo=None, fastboot=None, error=None, keep=None)
     for k, v in kw.items():
@@ -83,6 +83,15 @@ class LogoChanger(unittest.TestCase):
             new, _ = lc.build(self.src, opts(redraw_padlock=redraw), quiet=True)
             a, b = lc.decode(self.src, slot).crop(top), lc.decode(new, slot).crop(top)
             self.assertEqual(a.tobytes() == b.tobytes(), same)
+
+    def test_os_defaults(self):
+        self.assertEqual(lc.resolve(opts()).footer, "Android")
+        self.assertEqual(lc.resolve(opts(), "linux").footer, "Linux")
+        self.assertEqual(lc.resolve(opts(os="none")).footer, "")
+        self.assertEqual(lc.resolve(opts(os="linux", footer="Arch Linux")).footer, "Arch Linux")
+        a, _ = lc.build(self.src, opts(os="android"), quiet=True)
+        b, _ = lc.build(self.src, opts(os="linux"), quiet=True)
+        self.assertNotEqual(a, b)
 
     def test_every_design_and_a_picture(self):
         pic = os.path.join(tempfile.mkdtemp(), "pic.png")

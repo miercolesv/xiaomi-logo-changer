@@ -35,7 +35,7 @@ except ImportError:
     sys.exit("Pillow is needed: 'pip install pillow', or 'sudo pacman -S python-pillow' (Arch), "
              "or 'sudo apt install python3-pil' (Debian, Ubuntu)")
 
-VERSION = "1.0"
+VERSION = "1.1"
 REPO = "https://github.com/miercolesv/xiaomi-logo-changer"
 FONT_URL = "https://raw.githubusercontent.com/miercolesv/xiaomi-logo-changer/main/fonts/"
 FONTS = {
@@ -370,7 +370,7 @@ class Console(Design):
     name, about = "console", "A console login prompt with a cursor"
 
     def logo(self, u):
-        return console_line([(self.opts.text or "linux login:", LIGHT)], 64 * u, cursor=LIGHT)
+        return console_line([(self.opts.text or OS_WORDS[self.opts.os]["prompt"], LIGHT)], 64 * u, cursor=LIGHT)
 
     def fastboot(self, u):
         return console_line([("fastboot", LIGHT)], 64 * u, cursor=LIGHT)
@@ -381,7 +381,7 @@ class Status(Design):
 
     def logo(self, u):
         return console_line([("[  ", LIGHT), ("OK", GREEN), ("  ] ", LIGHT),
-                             (self.opts.text or "Booting Linux", LIGHT)], 52 * u)
+                             (self.opts.text or OS_WORDS[self.opts.os]["booting"], LIGHT)], 52 * u)
 
     def fastboot(self, u):
         return console_line([("[ ", LIGHT), ("WAIT", AMBER), (" ] ", LIGHT), ("Fastboot mode", LIGHT)], 52 * u)
@@ -395,6 +395,23 @@ class Picture(Design):
         box = 520 * u
         scale = min(box / pic.width, box / pic.height)
         return pic.resize((max(1, int(pic.width * scale)), max(1, int(pic.height * scale))), Image.LANCZOS)
+
+
+# Words that depend on the system the phone runs (--os)
+OS_WORDS = {
+    "android": {"footer": "Android", "prompt": "android:/ $", "booting": "Booting Android"},
+    "linux": {"footer": "Linux", "prompt": "linux login:", "booting": "Booting Linux"},
+    "none": {"footer": "", "prompt": "login:", "booting": "Booting"},
+}
+
+
+def resolve(opts, default_os="android"):
+    """Fill in --os and --footer defaults."""
+    if getattr(opts, "os", None) is None:
+        opts.os = default_os
+    if getattr(opts, "footer", None) is None:
+        opts.footer = OS_WORDS[opts.os]["footer"]
+    return opts
 
 
 DESIGNS = {d.name: d for d in (TerminalGreen, Terminal, Outline, Gradient, Amber, Console, Status)}
@@ -516,6 +533,7 @@ def plan(data, opts, quiet=False):
 
 def build(data, opts, preview_dir=None, quiet=False):
     """Return (new partition bytes, changed slots)."""
+    resolve(opts)
     design_cls = Picture if opts.image else DESIGNS[opts.design]
     design = design_cls(opts)
     slots = plan(data, opts, quiet)
@@ -810,8 +828,11 @@ def main():
     def design_opts(sp):
         sp.add_argument("--design", choices=list(DESIGNS), default=DEFAULT_DESIGN)
         sp.add_argument("--image", help="use your own picture (PNG/JPEG) instead of a design")
+        sp.add_argument("--os", choices=list(OS_WORDS),
+                        help='what the phone runs: sets "Powered by ..." and the console/status text '
+                             "(default: android; linux for install)")
         sp.add_argument("--text", help="text for the console and status designs")
-        sp.add_argument("--footer", default="Linux", help='word under "Powered by" (empty: no footer)')
+        sp.add_argument("--footer", help='word under "Powered by" (empty: no footer)')
         sp.add_argument("--redraw-padlock", action="store_true", help="draw a new unlocked padlock instead of keeping the phone's")
         sp.add_argument("--keep-fastboot", action="store_true", help="leave the fastboot screen as it is")
         sp.add_argument("--keep-error", action="store_true", help="leave the error screen as it is")
@@ -848,6 +869,8 @@ def main():
     sp.set_defaults(fn=cmd_restore)
 
     opts = p.parse_args()
+    if hasattr(opts, "design"):
+        resolve(opts, "linux" if opts.cmd == "install" else "android")
     if getattr(opts, "image", None) and not os.path.exists(opts.image):
         die(f"{opts.image} not found")
     opts.fn(opts)

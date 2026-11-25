@@ -19,8 +19,9 @@ ROM's `images/logo.img`, or `pull` from a rooted phone.
 |---|---|
 | `--design NAME` | `terminal-green` (default), `terminal`, `outline`, `gradient`, `amber`, `console`, `status` |
 | `--image FILE` | Your own picture (PNG or JPEG) instead of a design |
+| `--os NAME` | `android` (default), `linux` (default for `install`) or `none`: sets "Powered by ..." and the `console`/`status` text |
 | `--text TEXT` | Text for `console` and `status`, e.g. `--text "mi10 login:"` |
-| `--footer TEXT` | Word under "Powered by" (default `Linux`; `""` removes it) |
+| `--footer TEXT` | Word under "Powered by", overriding `--os` (`""` removes it) |
 | `--redraw-padlock` | Draw a new unlocked padlock instead of keeping the phone's |
 | `--keep-fastboot`, `--keep-error` | Leave those screens as they are |
 | `--logo N`, `--fastboot N`, `--error N`, `--keep N` | Say what picture N is, if it was read wrongly |
