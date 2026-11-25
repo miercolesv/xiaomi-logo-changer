@@ -1,11 +1,13 @@
 name: Release
 
-# Pushing a tag such as v1.0 publishes the ready-made Mi 10 files in mi10/
-# as a GitHub release.
+# Publishes the ready-made Mi 10 files in mi10/ as the release
+# v<VERSION> (VERSION from logo_changer.py), whenever they change.
 
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
+    paths: ["mi10/**", ".github/workflows/release.yml"]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -18,4 +20,11 @@ jobs:
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" mi10/*.zip --title "$GITHUB_REF_NAME" --notes-file mi10/NOTES.md
+        run: |
+          tag="v$(sed -n 's/^VERSION = "\(.*\)"/\1/p' logo_changer.py)"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" mi10/*.zip --clobber
+            gh release edit "$tag" --notes-file mi10/NOTES.md
+          else
+            gh release create "$tag" mi10/*.zip --title "$tag" --notes-file mi10/NOTES.md --target "$GITHUB_SHA"
+          fi
