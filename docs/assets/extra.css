@@ -1,0 +1,89 @@
+/* Colours: near-black header, terminal green accent */
+:root {
+  --md-primary-fg-color: #18181b;
+  --md-primary-fg-color--light: #27272a;
+  --md-primary-fg-color--dark: #09090b;
+  --md-accent-fg-color: #16a34a;
+  --md-typeset-a-color: #15803d;
+}
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: #121215;
+  --md-accent-fg-color: #50fa7b;
+  --md-typeset-a-color: #50fa7b;
+}
+
+/* Friendly round corners */
+.md-typeset .admonition,
+.md-typeset details,
+.md-typeset .tabbed-set,
+.md-typeset pre > code,
+.md-typeset table:not([class]) {
+  border-radius: 12px;
+}
+.md-typeset .grid.cards > ul > li {
+  border-radius: 16px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.md-typeset .grid.cards > ul > li:hover {
+  transform: translateY(-2px);
+}
+
+/* Phone screenshots */
+.md-typeset img.shot {
+  display: block;
+  margin: 1em auto;
+  max-width: 100%;
+  border-radius: 14px;
+}
+
+/* Big friendly title on the home page */
+.md-typeset .hero h1 {
+  color: var(--md-default-fg-color);
+  font-weight: 800;
+  margin-bottom: 0.2em;
+}
+.md-typeset .hero p.tagline {
+  font-size: 1.15em;
+  opacity: 0.85;
+  margin-top: 0;
+}
+
+/* Ordered lists are steps: numbers in green circles */
+.md-typeset ol {
+  counter-reset: step;
+  list-style: none;
+  padding-left: 0;
+  margin-left: 0;
+}
+.md-typeset ol > li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 2.6em;
+  margin-bottom: 1em;
+}
+.md-typeset ol > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: -0.05em;
+  width: 1.8em;
+  height: 1.8em;
+  line-height: 1.8em;
+  text-align: center;
+  border-radius: 50%;
+  background: var(--md-accent-fg-color);
+  color: #0b0b0d;
+  font-weight: 700;
+  font-size: 0.85em;
+}
+
+/* Cards: two per row on wide screens */
+.md-typeset .grid.cards {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+}
+
+/* Light mode: same green, darker for contrast on white */
+[data-md-color-scheme="default"] {
+  --md-accent-fg-color: #16a34a;
+  --md-typeset-a-color: #15803d;
+}

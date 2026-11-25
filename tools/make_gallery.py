@@ -108,6 +108,27 @@ def main():
         d.text((x + (TW - w) / 2, y + th + 12), name, font=f, fill=(200, 200, 205))
     sheet.save(os.path.join(OUT, "gallery.png"), optimize=True)
     before_after(src)
+    pairs(src)
+
+
+def pairs(src):
+    """One picture per design for the site: boot logo above, fastboot screen below."""
+    w = 480
+
+    def middle(im):
+        im = im.crop((0, int(im.height * 0.40), im.width, int(im.height * 0.58)))
+        return im.resize((w, int(w * im.height / im.width)), Image.LANCZOS)
+
+    for name in lc.DESIGNS:
+        new, _ = lc.build(src, opts(name), quiet=True)
+        slots = lc.find_slots(new)
+        boot, fast = middle(lc.decode(new, slots[0])), middle(lc.decode(new, slots[1]))
+        pic = Image.new("RGB", (w, boot.height * 2 + 8), BG)
+        pic.paste(boot, (0, 0))
+        pic.paste(fast, (0, boot.height + 8))
+        pic.save(os.path.join(OUT, f"{name}.png"), optimize=True)
+    new, _ = lc.build(src, opts(lc.DEFAULT_DESIGN), quiet=True)
+    middle(lc.decode(new, lc.find_slots(new)[3])).save(os.path.join(OUT, "error.png"), optimize=True)
 
 
 main()

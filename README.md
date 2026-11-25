@@ -4,6 +4,8 @@ Replace the Mi logo, fastboot screen and error screen of a Xiaomi phone with
 one of seven designs, or your own picture. Works with stock MIUI or HyperOS,
 custom ROMs, and Linux.
 
+**Guide:** [miercolesv.github.io/xiaomi-logo-changer](https://miercolesv.github.io/xiaomi-logo-changer/)
+
 ![Before and after](docs/designs/before-after.png)
 
 ## Designs
@@ -47,7 +49,7 @@ fastboot flash logo logo-new.img
 ```
 
 Check the previews in `logo-new-preview/` before flashing: it has only been
-tested on the Mi 10. Options, modules and details: [docs/usage.md](docs/usage.md).
+tested on the Mi 10. Options, modules and details: [advanced guide](https://miercolesv.github.io/xiaomi-logo-changer/advanced/).
 
 ## Licence
 

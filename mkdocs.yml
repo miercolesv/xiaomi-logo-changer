@@ -1,0 +1,73 @@
+site_name: Xiaomi Logo Changer
+site_description: Give your Xiaomi phone a new boot logo, fastboot screen and error screen
+site_url: https://miercolesv.github.io/xiaomi-logo-changer/
+repo_url: https://github.com/miercolesv/xiaomi-logo-changer
+repo_name: xiaomi-logo-changer
+edit_uri: edit/main/docs/
+
+nav:
+  - Home: index.md
+  - Designs: designs.md
+  - Install: install.md
+  - Undo: undo.md
+  - Advanced: advanced.md
+
+theme:
+  name: material
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
+  icon:
+    repo: fontawesome/brands/github
+  font:
+    text: Inter
+    code: JetBrains Mono
+  palette:
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+  features:
+    - navigation.tabs
+    - navigation.footer
+    - navigation.top
+    - navigation.instant
+    - content.code.copy
+    - content.tabs.link
+    - search.suggest
+    - toc.follow
+
+extra_css:
+  - assets/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:  # for the Material icons only
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+copyright: MIT licence. Not affiliated with Xiaomi.
+
+exclude_docs: |
+  requirements.txt
